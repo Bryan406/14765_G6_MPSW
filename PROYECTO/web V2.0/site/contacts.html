@@ -354,10 +354,10 @@
       const valor = inputElement.value;
 
       // Permitir borrar y teclas de flechas
-      if (/^[a-zA-Z\b]+$/.test(valor)) {
+      if (/^[a-zA-Z\s\b]+$/.test(valor)) {
         inputElement.classList.remove('is-invalid');
       } else {
-        inputElement.value = valor.replace(/[^a-zA-Z]/g, ''); // Eliminar caracteres no alfabéticos
+        inputElement.value = valor.replace(/[^a-zA-Z\s]/g, ''); // Eliminar caracteres no alfabéticos ni espacios
         inputElement.classList.add('is-invalid');
       }
     }
