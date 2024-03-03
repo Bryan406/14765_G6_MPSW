@@ -1,4 +1,21 @@
 <?php
+//Import PHPMailer classes into the global namespace
+//These must be at the top of your script, not inside a function
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+//Load Composer's autoloader
+require 'vendor/autoload.php';
+
+$mail = new PHPMailer(true);
+$mail->SMTPOptions = array(
+    'ssl' => array(
+        'verify_peer' => false,
+        'verify_peer_name' => false,
+        'allow_self_signed' => true
+    )
+);
 
 $formConfigFile = file_get_contents("rd-mailform.config.json");
 $formConfig = json_decode($formConfigFile, true);
@@ -6,8 +23,6 @@ $formConfig = json_decode($formConfigFile, true);
 date_default_timezone_set('Etc/UTC');
 
 try {
-    require './phpmailer/PHPMailerAutoload.php';
-
     $recipients = $formConfig['recipientEmail'];
 
     preg_match_all("/([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)/", $recipients, $addresses, PREG_OFFSET_CAPTURE);
@@ -27,7 +42,7 @@ try {
     }
 
     if (preg_match('/^(127\.|192\.168\.|::1)/', getRemoteIPAddress())) {
-        die('MF002');
+        //die('MF002');
     }
 
     $template = file_get_contents('rd-mailform.tpl');
@@ -35,16 +50,16 @@ try {
     if (isset($_POST['form-type'])) {
         switch ($_POST['form-type']){
             case 'contact':
-                $subject = 'A message from your site visitor';
+                $subject = 'Un mensaje de su visitante del sitio';
                 break;
             case 'subscribe':
-                $subject = 'Subscribe request';
+                $subject = 'Solicitud de suscripción';
                 break;
             case 'order':
-                $subject = 'Order request';
+                $subject = 'Solicitud de orden';
                 break;
             default:
-                $subject = 'A message from your site visitor';
+                $subject = 'Un mensaje de su visitante del sitio';
                 break;
         }
     }else{
@@ -82,8 +97,6 @@ try {
         array($subject, $_SERVER['SERVER_NAME']),
         $template);
 
-    $mail = new PHPMailer();
-
 
     if ($formConfig['useSmtp']) {
         //Tell PHPMailer to use SMTP
@@ -105,7 +118,7 @@ try {
 
         // Whether to use SMTP authentication
         $mail->SMTPAuth = true;
-        $mail->SMTPSecure = "ssl";
+        $mail->SMTPSecure = 'tls';
 
         // Username to use for SMTP authentication
         $mail->Username = $formConfig['username'];
@@ -142,5 +155,8 @@ try {
 } catch (phpmailerException $e) {
     die('MF254');
 } catch (Exception $e) {
+
+    var_dump($e);
+
     die('MF255');
 }
